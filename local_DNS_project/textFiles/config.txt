@@ -1,0 +1,7 @@
+[0] server_name [3] domain [5] IP [7] port number
+local_dns_server = [ dns.dreamnet.com , 100.100.100.99 ] 23002
+root_dns_server = [ dns.rootDNSservice.com , 99.99.99.99 ] 23003
+comTLD_dns_server = [ dns.comTLDDNSsolution.com , 111.112.113.44 ] 23004
+abcdef_dns_server = [ dns.abcdef.com , 77.88.99.11 ] 10001
+xyz_dns_server =
+ahobho_dns_server =
