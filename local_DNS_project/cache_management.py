@@ -1,9 +1,10 @@
 def cache_access(access_type, txt=None, data=[]):
+    file = "textFiles/" + txt
     if not txt:
         print("Fail to read", txt)
         return
     
-    with open(txt, "r") as f:
+    with open(file, "r") as f:
         original_data = f.read()
 
     exist = False
@@ -39,7 +40,7 @@ def cache_access(access_type, txt=None, data=[]):
                 break
 
         if not exist:
-            with open(txt, "w") as g:
+            with open(file, "w") as g:
                 g.write(original_data + '\n')
                 g.write(' '.join(data))
 
