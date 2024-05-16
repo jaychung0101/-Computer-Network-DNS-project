@@ -1,4 +1,0 @@
-[0] key [2] value [4] type [6] port
-abcdef.com : dns.abcdef.com , NS
-dns.abcdef.com : 77.88.99.11 , A , 23002
-real.333.com : 519.56.156.61 , A
