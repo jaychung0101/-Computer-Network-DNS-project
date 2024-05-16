@@ -14,7 +14,7 @@ def add_via(data):
 
 def main():
     # Read localDNSserver port from 'config.txt'
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "local_dns_server" in line:
                 config = line.split()
@@ -26,7 +26,7 @@ def main():
         return
 
     # Read rootDNSserver from 'config.txt' and save in cache
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "root_dns_server" in line:
                 config = line.split()

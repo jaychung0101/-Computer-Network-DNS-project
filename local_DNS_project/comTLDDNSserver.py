@@ -13,7 +13,7 @@ def add_via(data):
 
 def main():
     # Read comTLDDNSserver port from 'config.txt'
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "comTLD_dns_server" in line:
                 config = line.split()
@@ -25,7 +25,7 @@ def main():
         return
 
     # Read all .com authoritative from 'config.txt' and save in cache
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         """
         .com회사들의 authoritative서버의 NS와 A 저장 필요
         """

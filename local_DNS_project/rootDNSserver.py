@@ -12,12 +12,20 @@ def add_via(data):
 
 
 def main():
-    if len(sys.argv) != 2 or int(sys.argv[1]) != 23003:
+    # Read rootDNSserver port from 'config.txt'
+    with open("textFiles/config.txt", "r") as f:
+        for line in f.readlines():
+            if "root_dns_server" in line:
+                config = line.split()
+                rootDNSPort = config[7]
+                break;
+    
+    if len(sys.argv) != 2 or sys.argv[1] != rootDNSPort:
         print("Usage: python rootDNSserver.py 23003") # same as port number in config.txt
         return
     
     # Read all TLDDNSserver from 'config.txt' and save in cache
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "TLD_dns_server" in line:
                 config = line.split()
