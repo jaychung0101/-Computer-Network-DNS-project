@@ -58,14 +58,6 @@ def main():
             print("receive message from", clientAddress)
             messageFromClient = pickle.loads(message)
             
-            """
-            cache에
-            1. 있으면 
-                1-1. rootRecursiveFlag = True 이면 rootrootRecursiveFlag = True 후 TLD로 recursive
-                1-2. rootRecursiveFlag = False 이면 TLD RR(A)를 local로 반환 후 iterative
-            2. 없으면
-                local로 없다고 알려줘야함
-            """
             messageFromClient=msg_access.msg_set(messageFromClient, via=" -> root DNS server")
             domain=msg_access.get_value(messageFromClient, type="domain").split('.')
             RR_TLD=cache_management.cache_access("i", "rootDNSserverCache.txt", domain[len(domain)-1]+"TLD")
@@ -76,10 +68,11 @@ def main():
                     destPort=cache_management.cache_get(RR_TLD, type="RR_port")
                     rootDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
                     """
-                    TLD로 전송, caching 등
+                    send to TLD DNS server
                     """
                     messageFromTLD=add_via(rootDNSSocket.recvfrom(2048))
                     rootDNSSocket.sendto(pickle.dumps(messageFromTLD), clientAddress)
+                    continue
                 
                 # iterated query
                 else:
@@ -89,9 +82,10 @@ def main():
                                                          nextDest=destPort)
                     rootDNSSocket.sendto(pickle.dumps(messageFromClient), clientAddress)
             
-            else: # If there is no TLD server include messageFromClient['domain'] in cache:
+            # TLD not exists
+            else:
                 replyMessage=msg_access.msg_reply(messageFromClient,
-                                                  IP="Fail to search",
+                                                  IP=False,
                                                   authoritative=False)
                 rootDNSSocket.sendto(pickle.dumps(replyMessage), clientAddress)
 

@@ -12,6 +12,8 @@ def add_via(data):
 
 
 def main():
+    cache_path = "comTLDDNSserverCache.txt"
+    
     # Read comTLDDNSserver port from 'config.txt'
     with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
@@ -21,20 +23,20 @@ def main():
                 break;
 
     if len(sys.argv) != 2 or sys.argv[1] != comTLDDNSPort:
-        print("Usage: python comTLDDNSserver.py ", comTLDDNSPort) # same as port# in config.txt
+        print("Usage: python comTLDDNSserver.py", comTLDDNSPort) # same as port# in config.txt
         return
 
     # Read all .com authoritative from 'config.txt' and save in cache
     with open("textFiles/config.txt", "r") as f:
-        """
-        .com회사들의 authoritative서버의 NS와 A 저장 필요
-        """
-        # for line in f.readlines():
-        #     if "comTLD_dns_server" in line:
-        #         config = line.split()
-        #         cache = [config[3], ":", config[5], ", A ,", config[7]]
-        #         cache_management.cache_access("w", "comTLDDNSserverCache.txt", cache)
-        #         break;
+        for _ in range(4):
+            f.readline()
+        
+        for line in f:
+            config = line.split()
+            NS = ['.'.join(config[3].split('.')[-2:]), ":", config[3], ", NS"]
+            cache_management.cache_access("w", cache_path, NS)
+            A = [config[3], ":", config[5], ", A ,", config[7]]
+            cache_management.cache_access("w", cache_path, A)
     
     while True:
         user_input = input("recursiveFlag(Enter on/off) >> ")
@@ -53,79 +55,49 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as comTLDDNSSocket:
         comTLDDNSSocket.bind(('', comTLDDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print("comTLDDNSserverCache.txt")
+        cache_management.cache_print(cache_path)
 
         print("The comTLDDNSserver is ready to receive")
         
         while True:
             message, clientAddress = comTLDDNSSocket.recvfrom(2048)
             print("receive message from", clientAddress)
-            messageFromClient = pickle.loads(message)
-            
-            """
-            TLDRecursiveFlag에 따라 각 요청 처리
-            1. root에서 온 경우(rootRecursive=True)
-                - authoritative로 recursive요청
-            2. localDNS에서 온 경우(rootRecursive=False)
-                2-1. TLDRecursiveFlag=True인 경우
-                    - authoritative로 recursive요청
-                2-2. TLDRecursiveFlag=Flase인 경우
-                    localDNS로
-                    - CNAME있으면 CNAME, A반환
-                    - authoritative의 NS, A 반환
-            """
+            messageFromClient=pickle.loads(message)
             messageFromClient=msg_access.msg_set(messageFromClient, via=" -> .com TLD DNS server")
 
             RR_key = '.'.join(msg_access.get_value(messageFromClient, "domain").split('.')[-3:])
-            RR = cache_management.cache_access("s", "comTLDDNSserverCache.txt", RR_key)
-            if RR:
-                RR_type = cache_management.cache_get(RR, type="RR_type")
-                RR_value = cache_management.cache_get(RR, type="RR_value")
-                RR_A = cache_management.cache_access("s", "comTLDDNSserverCache.txt", RR_value)
-
-                # TLD has CNAME
-                if RR_type == "CNAME":
-                    IP = cache_management.cache_get(RR_A, type="RR_value")
-                    replyMessage=msg_access.msg_reply(messageFromClient,
-                                                      IP = IP,
-                                                      cachingRR_1=RR_A,
-                                                      cachingRR_2=RR,
-                                                      authoritative=True
-                                                      )
-                    
-                    comTLDDNSSocket.sendto(pickle.dumps(replyMessage), clientAddress)
+            RR_NS = cache_management.cache_access("s", cache_path, RR_key)
+            
+            # NS exists
+            if RR_NS:
+                RR_NS_value = cache_management.cache_get(RR_NS, type="RR_value")
+                RR_A = cache_management.cache_access("s", cache_path, RR_NS_value)
                 
                 # TLD has NS
-                elif RR_type == "NS":
-                    destPort = cache_management.cache_get(RR_A, type="RR_port")
+                destPort = cache_management.cache_get(RR_A, type="RR_port")
+                messageFromClient=msg_access.msg_set(messageFromClient,
+                                                     cachingRR_1=RR_NS,
+                                                     cachingRR_2=RR_A,
+                                                     nextDest=destPort
+                                                     )
 
-                    # recursive query(send by root DNS server or local DNS server)
-                    if msg_access.get_value(messageFromClient, "rootRecursiveFlag") == True or TLDRecursiveFlag == True:
-                        messageFromClient=msg_access.msg_set(messageFromClient, TLDRecursiveFlag=True)
-                        comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
-                        """
-                        authoritative
-                        """
-                        messageFromAuthoritative=add_via(comTLDDNSSocket.recvfrom(2048))
-                        comTLDDNSSocket.sendto(pickle.dumps(messageFromAuthoritative), clientAddress)
-                    
-                    # iterated query
-                    else:
-                        messageFromClient=msg_access.msg_set(messageFromClient,
-                                                             cachingRR_1=RR,
-                                                             cachingRR_2=RR_A,
-                                                             nextDest=destPort
-                                                             )
-                        comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), clientAddress)
+                # recursive query(send by root DNS server or local DNS server)
+                if msg_access.get_value(messageFromClient, "rootRecursiveFlag") == True or TLDRecursiveFlag == True:
+                    comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
+                    """
+                    send to authoritative DNS server
+                    """
+                    messageFromClient=add_via(comTLDDNSSocket.recvfrom(2048))
 
-            # if domain not in cache
+            # NS not exists
             else:
-                # end of query
-                replyMessage=msg_access.msg_reply(messageFromClient,
-                                                  IP="Fail to search",
-                                                  authoritative=False
-                                                  )
-                comTLDDNSSocket.sendto(pickle.dumps(replyMessage), clientAddress)
+                # END OF DNS
+                messageFromClient=msg_access.msg_reply(messageFromClient,
+                                                       IP=False,
+                                                       authoritative=False
+                                                       )
+                
+            comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), clientAddress)
 
 if __name__ == "__main__":
     main()

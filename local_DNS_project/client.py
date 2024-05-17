@@ -20,7 +20,7 @@ def main():
         return
     
     # config.txt에서 localDNSserver 정보 읽기
-    with open("config.txt", "r") as f:
+    with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "local_dns_server" in line:
                 config = line.split()
@@ -34,7 +34,7 @@ def main():
         
         if is_valid_message(temp):
             message=msg_access.msg_set(init=True)
-            msg_access.msg_set(message, domain=is_valid_message(temp))
+            message=msg_access.msg_set(message, domain=is_valid_message(temp))
             break
         print("Please follow the given format 'ipaddr <name>'\n")
 
@@ -51,7 +51,6 @@ def main():
         print(msg_access.get_value(modifiedMessage, type="domain"), ": Can't find IP Address")
         
     print("(via:", msg_access.get_value(modifiedMessage, type="via"), ")")
-
 
 if __name__ == "__main__":
     main()

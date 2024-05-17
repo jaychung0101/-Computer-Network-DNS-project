@@ -5,44 +5,41 @@ def cache_access(access_type, txt=None, data=[]):
         return
     
     with open(file, "r") as f:
-        original_data = f.read()
+        exist = False
 
-    exist = False
-    if access_type == "r": # read
-        count = 0
-        for line in original_data.split('\n'):
-            if count == 0:
+        if access_type == "r": # read
+            f.readline()
+            count = 1
+            for line in f:
+                print("\t{}. {}".format(count, ' '.join(line.split()[:5])))
                 count += 1
-                continue
-            print("\t{}. {}".format(count, ' '.join(line.split()[:5])))
-            count += 1
-        print()
-    elif access_type == "i": # include
-        for line in original_data.split('\n'):
-            if data in line:
-                exist = line
-                break
-
-        return exist
-    elif access_type == "s": # key search
-        for line in original_data.split('\n'):
-            if data in line:
-                elements = line.split()
-                if elements[0] == data:
+            print()
+        elif access_type == "i": # include
+            for line in f:
+                if data in line:
                     exist = line
                     break
-        
-        return exist
-    elif access_type == "w": # write
-        for line in original_data.split('\n'):
-            if data[0] in line:
-                exist = True
-                break
+        elif access_type == "s": # key search
+            for line in f:
+                if data in line:
+                    elements = line.split()
+                    if elements[0] == data:
+                        exist = line
+                        break
+        elif access_type == "w": # write
+            for line in f:
+                if data[0] in line:
+                    elements = line.split()
+                    if elements[0] == data[0]:
+                        exist = line
+                        break
 
-        if not exist:
-            with open(file, "w") as g:
-                g.write(original_data + '\n')
-                g.write(' '.join(data))
+            if not exist:
+                with open(file, "a") as g:
+                    g.write('\n')
+                    g.write(' '.join(data))
+
+        return exist
 
 
 def cache_print(txt=None):

@@ -1,8 +1,2 @@
 [0] key [2] value [4] type [6] port
 dns.rootDNSservice.com : 99.99.99.99 , A , 23003
-dns.comTLDDNSsolution.com : 111.112.113.44 , A , 23004
-www.xyznet.com : server1.xyznet.com , CNAME
-server1.xyznet.com : 203.249.88.112 , A
-www.xyznet.com : 203.249.88.112 , A
-www.aaa.com : www.aaaa.com , NS , 23003
-www.aaaa.com : 123.123.123.123 , A , 23001
