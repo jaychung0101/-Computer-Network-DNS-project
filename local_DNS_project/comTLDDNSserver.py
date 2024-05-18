@@ -12,10 +12,11 @@ def add_via(data):
 
 
 def main():
-    cache_path = "comTLDDNSserverCache.txt"
+    config_path = "textFiles/config.txt"
+    cache_path = "textFiles/comTLDDNSserverCache.txt"
     
     # Read comTLDDNSserver port from 'config.txt'
-    with open("textFiles/config.txt", "r") as f:
+    with open(config_path, "r") as f:
         for line in f.readlines():
             if "comTLD_dns_server" in line:
                 config = line.split()
@@ -27,7 +28,7 @@ def main():
         return
 
     # Read all .com authoritative from 'config.txt' and save in cache
-    with open("textFiles/config.txt", "r") as f:
+    with open(config_path, "r") as f:
         for _ in range(4):
             f.readline()
         
@@ -65,7 +66,8 @@ def main():
             messageFromClient=pickle.loads(message)
             messageFromClient=msg_access.msg_set(messageFromClient, via=" -> .com TLD DNS server")
 
-            RR_key = '.'.join(msg_access.get_value(messageFromClient, "domain").split('.')[-3:])
+            domain=msg_access.get_value(messageFromClient, "domain").split('.')
+            RR_key='.'.join(domain[len(domain)-2:])
             RR_NS = cache_management.cache_access("s", cache_path, RR_key)
             
             # NS exists

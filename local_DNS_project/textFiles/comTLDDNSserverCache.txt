@@ -1,3 +1,5 @@
 [0] key [2] value [4] type [6] port
-dns.abcdef.com : 77.88.99.11 , A , 10001
 abcdef.com : dns.abcdef.com , NS
+dns.abcdef.com : 77.88.99.11 , A , 10001
+xyz.com : dns.xyz.com , NS
+dns.xyz.com : 120.120.120.120 , A , 10002

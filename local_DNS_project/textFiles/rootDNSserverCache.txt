@@ -1,2 +1,3 @@
 [0] key [2] value [4] type [6] port
 dns.comTLDDNSsolution.com : 111.112.113.44 , A , 23004
+com : dns.comTLDDNSsolution.com , NS

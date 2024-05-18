@@ -6,7 +6,6 @@ import os
 import cache_management
 import msg_access
 
-
 def add_via(data, dnsServer):
     message = data[0]
     message = pickle.loads(message)
@@ -19,7 +18,7 @@ def main():
         print("Usage: python companyDNSserver.py <port> <companyName.txt>")
         return
     
-    cache = sys.argv[2]
+    config_path = "textFiles/config.txt"
     cache_path = "textFiles/" + sys.argv[2]
     if not os.path.exists(cache_path):
         print(sys.argv[2], "does not exist")
@@ -28,7 +27,7 @@ def main():
 
     companyName = sys.argv[2].split('.')[0]
     companyDNSserver = companyName + "_dns_server"
-    with open("textFiles/config.txt", "r") as f:
+    with open(config_path, "r") as f:
         for line in f.readlines():
             if companyDNSserver in line:
                 config = line.split()
@@ -39,11 +38,11 @@ def main():
         print("Usage: python companyDNSserver.py", companyDNSPort, sys.argv[2])
         return
 
-    companyDNSPort = int(sys.argv[1]) # port = 23004 (same as config.txt)
+    companyDNSPort = int(sys.argv[1])
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as companyDNSSocket:
         companyDNSSocket.bind(('', companyDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print(cache)
+        cache_management.cache_print(cache_path)
 
         print("The", companyName, "DNS server is ready to receive")
         
@@ -56,7 +55,7 @@ def main():
             messageFromClient=msg_access.msg_set(messageFromClient, via=path)
 
             RR_key = msg_access.get_value(messageFromClient, "domain")
-            RR_A = cache_management.cache_access("s", cache, RR_key)
+            RR_A = cache_management.cache_access("s", cache_path, RR_key)
 
             # Domain exists
             if RR_A:
@@ -65,7 +64,7 @@ def main():
                 if cache_management.cache_get(RR_A, type="RR_type") == "CNAME":
                     RR_CNAME = RR_A
                     RR_A_key = cache_management.cache_get(RR_CNAME, type="RR_value")
-                    RR_A = cache_management.cache_access("s", cache, RR_A_key)
+                    RR_A = cache_management.cache_access("s", cache_path, RR_A_key)
                 
                 RR_A_value = cache_management.cache_get(RR_A, type="RR_value")
                 replyMessage=msg_access.msg_reply(messageFromClient,

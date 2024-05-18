@@ -4,6 +4,21 @@ import pickle
 import cache_management
 import msg_access
 
+def caching_and_display(message, path):
+    cachingRR_1=msg_access.get_value(message, "cachingRR_1")
+    cachingRR_2=msg_access.get_value(message, "cachingRR_2")
+    print("cachingRR_1 >>", cachingRR_1)
+    print("cachingRR_2 >>", cachingRR_2)
+    if cachingRR_1:
+        cachingRR_1=cachingRR_1.split()
+        cachingRR_1=[cachingRR_1[0], ":"] + cachingRR_1[2:]
+        cache_management.cache_access("w", path, cachingRR_1)
+    if cachingRR_2:
+        print(cachingRR_2)
+        cachingRR_2=cachingRR_2.split()
+        cachingRR_2=[cachingRR_2[0], ":"] + cachingRR_2[2:]
+        cache_management.cache_access("w", path, cachingRR_2)
+
 
 def add_via(data):
     message = data[0]
@@ -13,8 +28,11 @@ def add_via(data):
 
 
 def main():
+    config_path = "textFiles/config.txt"
+    cache_path = "textFiles/localDNSserverCache.txt"
+
     # Read localDNSserver port from 'config.txt'
-    with open("textFiles/config.txt", "r") as f:
+    with open(config_path, "r") as f:
         for line in f.readlines():
             if "local_dns_server" in line:
                 config = line.split()
@@ -26,12 +44,12 @@ def main():
         return
 
     # Read rootDNSserver from 'config.txt' and save in cache
-    with open("textFiles/config.txt", "r") as f:
+    with open(config_path, "r") as f:
         for line in f.readlines():
             if "root_dns_server" in line:
                 config = line.split()
                 cache = [config[3], ":", config[5], ", A ,", config[7]]
-                cache_management.cache_access("w", "localDNSserverCache.txt", cache)
+                cache_management.cache_access("w", cache_path, cache)
                 break;
     
     
@@ -39,7 +57,7 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as localDNSSocket:
         localDNSSocket.bind(('', localDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print("localDNSserverCache.txt")
+        cache_management.cache_print(cache_path)
 
         print("The localDNSserver is ready to receive")
 
@@ -58,12 +76,12 @@ def main():
                 2-2. root 이동
             """
             # localDNSserver always request recursive query
-            messageFromClient=msg_access.msg_set(messageFromClient, 
-                               via = "local DNS server", 
-                               recursiveFlag = True
-                            )
+            messageFromClient = msg_access.msg_set(messageFromClient, 
+                                                   via = "local DNS server", 
+                                                   recursiveFlag = True
+                                                   )
             domain = msg_access.get_value(messageFromClient, type="domain")
-            data=cache_management.cache_access("s", "localDNSserverCache.txt", domain)
+            data=cache_management.cache_access("s", cache_path, domain)
             """
             response에 via 항상 추가, caching 구현해야함!!!!!
             """
@@ -81,7 +99,7 @@ def main():
 
                 # CNAME -> A return IP
                 elif RR_type == 'CNAME': 
-                    RR_A = cache_management.cache_access("s", "localDNSserverCache.txt", RR_value)
+                    RR_A = cache_management.cache_access("s", cache_path, RR_value)
                     RR_A_value = cache_management.cache_get(RR_A, type="RR_value")
                     replyMessage=msg_access.msg_reply(messageFromClient,
                                                       IP=RR_A_value,
@@ -90,7 +108,7 @@ def main():
 
                 # NS -> A access to authoritative DNS server
                 elif RR_type == 'NS': 
-                    RR_A = cache_management.cache_access("s", "localDNSserverCache.txt", RR_value)
+                    RR_A = cache_management.cache_access("s", cache_path, RR_value)
                     RR_A_type=cache_management.cache_get(RR_A, type="RR_type")
                     if RR_A_type == "A":
                         destPort = cache_management.cache_get(RR_A, type="RR_port")
@@ -103,10 +121,11 @@ def main():
             
             # Domain not exists:
             else:
-                TLDcaching = cache_management.cache_access("s", "localDNSserverCache.txt", "dns.comTLDDNSsolution.com")
+                TLD=domain.split('.')
+                TLDcaching = cache_management.cache_access("s", cache_path, TLD[len(TLD)-1])
                 
                 if TLDcaching==False:
-                    root = cache_management.cache_access("s", "localDNSserverCache.txt", "dns.rootDNSservice.com")
+                    root = cache_management.cache_access("s", cache_path, "dns.rootDNSservice.com")
                     rootPort = cache_management.cache_get(root, type="RR_port")
                     localDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", rootPort))
                     """
@@ -117,10 +136,18 @@ def main():
                     # END OF DNS
                     # root recursive accepted
                     if msg_access.get_value(messageFromRoot, type="reply"):
+
+                        print("From root(root recursive accepted):")
+                        caching_and_display(messageFromRoot, cache_path)
+                        print()
+
                         localDNSSocket.sendto(pickle.dumps(messageFromRoot), clientAddress)
                         continue
 
                     # root recursive denied
+                    print("From root(root recursive denied):")
+                    caching_and_display(messageFromRoot, cache_path)
+                    print()
                     destPort = msg_access.get_value(messageFromRoot, type="nextDest")
 
                 # TLD caching
@@ -135,17 +162,24 @@ def main():
                 # TLD recursive accepted 
                 # END OF DNS
                 if msg_access.get_value(messageFromTLD, type="reply"):
+                    print("From TLD(TLD recursive accepted):")
+                    caching_and_display(messageFromTLD, cache_path)
+                    print()
                     localDNSSocket.sendto(pickle.dumps(messageFromTLD), clientAddress)
 
                 # TLD recursive denied
                 else:
+                    print("From TLD(TLD recursive denied):")
+                    caching_and_display(messageFromTLD, cache_path)
                     destPort = msg_access.get_value(messageFromTLD, type="nextDest")
                     localDNSSocket.sendto(pickle.dumps(messageFromTLD), ("127.0.0.1", destPort))
                     """
                     send to authoritative DNS server
                     """
                     messageFromAuthoritative = add_via(localDNSSocket.recvfrom(2048))
-                    
+                    print("From authoritative:")
+                    caching_and_display(messageFromAuthoritative, cache_path)
+                    print()
                     # END OF DNS
                     if msg_access.get_value(messageFromAuthoritative, type="reply"):
                         localDNSSocket.sendto(pickle.dumps(messageFromAuthoritative), clientAddress)

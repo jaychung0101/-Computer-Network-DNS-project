@@ -1,10 +1,9 @@
-def cache_access(access_type, txt=None, data=[]):
-    file = "textFiles/" + txt
-    if not txt:
-        print("Fail to read", txt)
+def cache_access(access_type, cache_path=None, data=[]):
+    if not cache_path:
+        print("Fail to read", cache_path)
         return
     
-    with open(file, "r") as f:
+    with open(cache_path, "r") as f:
         exist = False
 
         if access_type == "r": # read
@@ -35,16 +34,16 @@ def cache_access(access_type, txt=None, data=[]):
                         break
 
             if not exist:
-                with open(file, "a") as g:
+                with open(cache_path, "a") as g:
                     g.write('\n')
                     g.write(' '.join(data))
 
         return exist
 
 
-def cache_print(txt=None):
-    if not txt:
-        print("Fail to read", txt)
+def cache_print(cache_path=None):
+    if not cache_path:
+        print("Fail to read", cache_path)
         return
 
     while True:
@@ -52,12 +51,12 @@ def cache_print(txt=None):
 
         if user_input == "cache":
             print("\n" + "cache list")
-            cache_access("r", txt)
+            cache_access("r", cache_path)
             break
         elif user_input == "":
             break
     
-    print("If you want to see cache again, please reboot the server!!\n")
+    print("If you want to see cache again, please restart the server!!\n")
     
 
 def cache_get(data=None, type=None):

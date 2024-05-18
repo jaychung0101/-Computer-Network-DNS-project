@@ -1,6 +1,7 @@
 def msg_set(message=None,
                     domain=None, IP=None, via=None, 
-                    recursiveFlag=None, rootRecursiveFlag=None, TLDRecursiveFlag=None, cachingRR_1=None, cachingRR_2=None, 
+                    recursiveFlag=None, rootRecursiveFlag=None, 
+                    cachingRR_1=None, cachingRR_2=None, 
                     nextDest=None, authoritative=None, init=False):
     if init==True:
         message = {}
@@ -11,7 +12,6 @@ def msg_set(message=None,
             'via': '',
             'recursiveFlag': False,
             'rootRecursiveFlag': False,
-            'TLDRecursiveFlag': False,
             'cachingRR_1': None,
             'cachingRR_2': None,
             'nextDest': None,
@@ -44,12 +44,6 @@ def msg_set(message=None,
             message['rootRecursiveFlag'] = rootRecursiveFlag
         else:
             raise ValueError("'rootRecursiveFlag' get invalid format (use True/False)")
-
-    if TLDRecursiveFlag is not None:
-        if isinstance(TLDRecursiveFlag, bool):
-            message['TLDRecursiveFlag'] = TLDRecursiveFlag
-        else:
-            raise ValueError("'TLDRecursiveFlag' get invalid format (use True/False)")
 
     if cachingRR_1:
         message['cachingRR_1'] = cachingRR_1
@@ -105,9 +99,6 @@ def get_value(message, type):
         if type=="rootRecursiveFlag": 
             return message['rootRecursiveFlag']
 
-        if type=="TLDRecursiveFlag":
-            return message['TLDRecursiveFlag']
-
         if type=="cachingRR_1":
             return message['cachingRR_1']
 
@@ -120,7 +111,7 @@ def get_value(message, type):
         if type=="authoritative":
             return message['authoritative']
         
-        raise ValueError("'type' get invalid format(use domain/IP/via/recursiveFlag/rootRecursiveFlag/TLDRecursiveFlag/cachingRR_1/cachingRR_2/nextDest/authoritative)")
+        raise ValueError("'type' get invalid format(use domain/IP/via/recursiveFlag/rootRecursiveFlag/cachingRR_1/cachingRR_2/nextDest/authoritative)")
     except ValueError as e:
         print(f"Error in 'get_value' : {e}")
         return -1
