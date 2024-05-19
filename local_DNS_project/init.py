@@ -1,7 +1,6 @@
 import cache_management
 
 def main():
-    config_path = "textFiles/config.txt"
     cache_path = "textFiles/localDNSserverCache.txt"
 
     print("Are you sure to reset localDNSserevr cache?")
