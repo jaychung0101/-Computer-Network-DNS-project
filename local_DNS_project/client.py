@@ -3,8 +3,6 @@ import sys
 import pickle
 import msg_access
 
-
-# data유효성 검사
 def is_valid_message(data):
     parts = data.split()
     if len(parts) != 2:
@@ -19,7 +17,7 @@ def main():
         print("Usage: python client.py <port>")
         return
     
-    # config.txt에서 localDNSserver 정보 읽기
+    # Read localDNSserver from 'config.txt'
     with open("textFiles/config.txt", "r") as f:
         for line in f.readlines():
             if "local_dns_server" in line:
@@ -45,8 +43,11 @@ def main():
         modifiedMessage, _ = clientSocket.recvfrom(2048)
         modifiedMessage = pickle.loads(modifiedMessage)
 
+    # name resolution success
     if msg_access.get_value(modifiedMessage, type="authoritative"):
         print(msg_access.get_value(modifiedMessage, type="domain"), ":", msg_access.get_value(modifiedMessage, type="IP"))
+
+    # name resolution fail
     else:
         print(msg_access.get_value(modifiedMessage, type="domain"), ": Can't find IP Address")
         

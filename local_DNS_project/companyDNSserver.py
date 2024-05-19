@@ -13,7 +13,7 @@ def add_via(data, dnsServer):
     return message
 
 
-def main():
+def sys_validate():
     if len(sys.argv) != 3:
         print("Usage: python companyDNSserver.py <port> <companyName.txt>")
         return
@@ -39,6 +39,12 @@ def main():
         return
 
     companyDNSPort = int(sys.argv[1])
+    return cache_path, companyName, companyDNSserver, companyDNSPort
+
+
+def main():
+    cache_path, companyName, companyDNSserver, companyDNSPort = sys_validate()
+
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as companyDNSSocket:
         companyDNSSocket.bind(('', companyDNSPort)) # Bind to all network interface
         
@@ -57,6 +63,7 @@ def main():
             RR_key = msg_access.get_value(messageFromClient, "domain")
             RR_A = cache_management.cache_access("s", cache_path, RR_key)
 
+            # END OF DNS-2/3/4
             # Domain exists
             if RR_A:
 
@@ -76,7 +83,7 @@ def main():
                 
             # Domain not exists
             else:
-                # end of query
+                # END OF DNS-5
                 replyMessage=msg_access.msg_reply(messageFromClient,
                                                   IP=False,
                                                   authoritative=False

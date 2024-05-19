@@ -11,7 +11,7 @@ def add_via(data):
     return message
 
 
-def main():
+def sys_validate():
     config_path = "textFiles/config.txt"
     cache_path = "textFiles/comTLDDNSserverCache.txt"
     
@@ -26,7 +26,7 @@ def main():
     if len(sys.argv) != 2 or sys.argv[1] != comTLDDNSPort:
         print("Usage: python comTLDDNSserver.py", comTLDDNSPort) # same as port# in config.txt
         return
-
+    
     # Read all .com authoritative from 'config.txt' and save in cache
     with open(config_path, "r") as f:
         for _ in range(4):
@@ -53,6 +53,12 @@ def main():
         print("Please enter 'on' or 'off'")
     
     comTLDDNSPort = int(sys.argv[1]) # port = 23004 (same as config.txt)
+    return cache_path, TLDRecursiveFlag, comTLDDNSPort
+
+
+def main():
+    cache_path, TLDRecursiveFlag, comTLDDNSPort = sys_validate()
+
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as comTLDDNSSocket:
         comTLDDNSSocket.bind(('', comTLDDNSPort)) # Bind to all network interface
         
@@ -82,9 +88,10 @@ def main():
                                                      cachingRR_2=RR_A,
                                                      nextDest=destPort
                                                      )
-
+                
+                # END OF DNS-2/3
                 # recursive query(send by root DNS server or local DNS server)
-                if msg_access.get_value(messageFromClient, "rootRecursiveFlag") == True or TLDRecursiveFlag == True:
+                if TLDRecursiveFlag == True or msg_access.get_value(messageFromClient, "rootRecursiveFlag") == True:
                     comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
                     """
                     send to authoritative DNS server
@@ -93,7 +100,7 @@ def main():
 
             # NS not exists
             else:
-                # END OF DNS
+                # END OF DNS-5
                 messageFromClient=msg_access.msg_reply(messageFromClient,
                                                        IP=False,
                                                        authoritative=False

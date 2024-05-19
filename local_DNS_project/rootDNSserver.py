@@ -11,7 +11,7 @@ def add_via(data):
     return message
 
 
-def main():
+def sys_validate():
     config_path = "textFiles/config.txt"
     cache_path = "textFiles/rootDNSserverCache.txt"
 
@@ -51,6 +51,12 @@ def main():
         print("Please enter 'on' or 'off'")
 
     rootDNSPort = int(sys.argv[1]) # port = 23003 (same as config.txt)
+    return cache_path, rootDNSPort, rootRecursiveFlag
+
+
+def main():
+    cache_path, rootDNSPort, rootRecursiveFlag = sys_validate()
+
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as rootDNSSocket:
         rootDNSSocket.bind(('', rootDNSPort)) # Bind to all network interface
         
@@ -66,8 +72,12 @@ def main():
             messageFromClient=msg_access.msg_set(messageFromClient, via=" -> root DNS server")
             domain=msg_access.get_value(messageFromClient, type="domain").split('.')
             RR_TLD_NS=cache_management.cache_access("s", cache_path, domain[len(domain)-1])
-            RR_TLD = cache_management.cache_access("s", cache_path, cache_management.cache_get(RR_TLD_NS, "RR_value"))
-            if RR_TLD:
+
+            # TLD exists
+            if RR_TLD_NS:
+                RR_TLD = cache_management.cache_access("s", cache_path, cache_management.cache_get(RR_TLD_NS, "RR_value"))
+
+                # END OF DNS-2
                 # rootRecursive query
                 if rootRecursiveFlag==True:
                     messageFromClient=msg_access.msg_set(messageFromClient, rootRecursiveFlag=True)
@@ -78,7 +88,6 @@ def main():
                     """
                     messageFromTLD=add_via(rootDNSSocket.recvfrom(2048))
                     rootDNSSocket.sendto(pickle.dumps(messageFromTLD), clientAddress)
-                    continue
                 
                 # iterated query
                 else:
@@ -90,6 +99,7 @@ def main():
                                                          nextDest=destPort)
                     rootDNSSocket.sendto(pickle.dumps(messageFromClient), clientAddress)
             
+            # END OF DNS-5
             # TLD not exists
             else:
                 replyMessage=msg_access.msg_reply(messageFromClient,
