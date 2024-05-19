@@ -2,4 +2,3 @@
 machine49.abcdef.com , 77.88.99.49 , A
 ftp.abcdef.com , machine49.abcdef.com , CNAME
 www.abcdef.com , machine49.abcdef.com , CNAME
-abcdef.com , machine49.abcdef.com , CNAME

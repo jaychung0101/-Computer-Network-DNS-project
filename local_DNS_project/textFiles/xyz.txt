@@ -1,5 +1,4 @@
 [0] key [2] value [4] type [6] port
-machine49.xyz.com , 120.120.120.120 , A , 10002
-ftp.abcdef.com , machine49.abcdef.com , CNAME
-www.abcdef.com , machine49.abcdef.com , CNAME
-abcdef.com , machine49.abcdef.com , CNAME
+machine59.xyz.com , 120.120.120.120 , A , 10002
+ftp.xyz.com , machine59.xyz.com , CNAME
+www.xyz.com , machine59.xyz.com , CNAME
