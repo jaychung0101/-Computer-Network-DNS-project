@@ -1,8 +1,9 @@
 import socket
 import sys
 import pickle
-import cache_management
-import msg_access
+
+from utils import cache_utils
+from utils import msg_utils
 
 def add_via(data):
     message = data[0]
@@ -35,9 +36,9 @@ def sys_validate():
         for line in f:
             config = line.split()
             NS = ['.'.join(config[3].split('.')[-2:]), ":", config[3], ", NS"]
-            cache_management.cache_access("w", cache_path, NS)
+            cache_utils.cache_access("w", cache_path, NS)
             A = [config[3], ":", config[5], ", A ,", config[7]]
-            cache_management.cache_access("w", cache_path, A)
+            cache_utils.cache_access("w", cache_path, A)
     
     while True:
         user_input = input("recursiveFlag(Enter on/off) >> ")
@@ -62,7 +63,7 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as comTLDDNSSocket:
         comTLDDNSSocket.bind(('', comTLDDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print(cache_path)
+        cache_utils.cache_print(cache_path)
 
         print("The comTLDDNSserver is ready to receive")
         
@@ -70,20 +71,20 @@ def main():
             message, clientAddress = comTLDDNSSocket.recvfrom(2048)
             print("receive message from", clientAddress)
             messageFromClient=pickle.loads(message)
-            messageFromClient=msg_access.msg_set(messageFromClient, via=" -> .com TLD DNS server")
+            messageFromClient=msg_utils.msg_set(messageFromClient, via=" -> .com TLD DNS server")
 
-            domain=msg_access.get_value(messageFromClient, "domain").split('.')
+            domain=msg_utils.get_value(messageFromClient, "domain").split('.')
             RR_key='.'.join(domain[len(domain)-2:])
-            RR_NS = cache_management.cache_access("s", cache_path, RR_key)
+            RR_NS = cache_utils.cache_access("s", cache_path, RR_key)
             
             # NS exists
             if RR_NS:
-                RR_NS_value = cache_management.cache_get(RR_NS, type="RR_value")
-                RR_A = cache_management.cache_access("s", cache_path, RR_NS_value)
+                RR_NS_value = cache_utils.cache_get(RR_NS, type="RR_value")
+                RR_A = cache_utils.cache_access("s", cache_path, RR_NS_value)
                 
                 # TLD has NS
-                destPort = cache_management.cache_get(RR_A, type="RR_port")
-                messageFromClient=msg_access.msg_set(messageFromClient,
+                destPort = cache_utils.cache_get(RR_A, type="RR_port")
+                messageFromClient=msg_utils.msg_set(messageFromClient,
                                                      cachingRR_1=RR_NS,
                                                      cachingRR_2=RR_A,
                                                      nextDest=destPort
@@ -91,7 +92,7 @@ def main():
                 
                 # END OF DNS-2/3
                 # recursive query(send by root DNS server or local DNS server)
-                if TLDRecursiveFlag == True or msg_access.get_value(messageFromClient, "rootRecursiveFlag") == True:
+                if TLDRecursiveFlag == True or msg_utils.get_value(messageFromClient, "rootRecursiveFlag") == True:
                     comTLDDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
                     """
                     send to authoritative DNS server
@@ -101,7 +102,7 @@ def main():
             # NS not exists
             else:
                 # END OF DNS-5
-                messageFromClient=msg_access.msg_reply(messageFromClient,
+                messageFromClient=msg_utils.msg_reply(messageFromClient,
                                                        IP=False,
                                                        authoritative=False
                                                        )

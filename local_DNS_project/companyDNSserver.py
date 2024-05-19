@@ -48,7 +48,7 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as companyDNSSocket:
         companyDNSSocket.bind(('', companyDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print(cache_path)
+        cache_utils.cache_print(cache_path)
 
         print("The", companyName, "DNS server is ready to receive")
         
@@ -61,19 +61,19 @@ def main():
             messageFromClient=msg_utils.msg_set(messageFromClient, via=path)
 
             RR_key = msg_utils.get_value(messageFromClient, "domain")
-            RR_A = cache_management.cache_access("s", cache_path, RR_key)
+            RR_A = cache_utils.cache_access("s", cache_path, RR_key)
 
             # END OF DNS-2/3/4
             # Domain exists
             if RR_A:
 
                 # if RR_A is CNAME, get A type RR
-                if cache_management.cache_get(RR_A, type="RR_type") == "CNAME":
+                if cache_utils.cache_get(RR_A, type="RR_type") == "CNAME":
                     RR_CNAME = RR_A
-                    RR_A_key = cache_management.cache_get(RR_CNAME, type="RR_value")
-                    RR_A = cache_management.cache_access("s", cache_path, RR_A_key)
+                    RR_A_key = cache_utils.cache_get(RR_CNAME, type="RR_value")
+                    RR_A = cache_utils.cache_access("s", cache_path, RR_A_key)
                 
-                RR_A_value = cache_management.cache_get(RR_A, type="RR_value")
+                RR_A_value = cache_utils.cache_get(RR_A, type="RR_value")
                 replyMessage=msg_utils.msg_reply(messageFromClient,
                                                   IP=RR_A_value,
                                                   cachingRR_1=RR_A,

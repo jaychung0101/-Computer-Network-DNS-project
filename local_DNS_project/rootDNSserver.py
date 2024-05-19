@@ -1,8 +1,10 @@
 import socket
 import sys
 import pickle
-import cache_management
-import msg_access
+
+from utils import cache_utils
+from utils import msg_utils
+
 
 def add_via(data):
     message = data[0]
@@ -33,9 +35,9 @@ def sys_validate():
             if "TLD_dns_server" in line:
                 config = line.split()
                 TLD_A = [config[3], ":", config[5], ", A ,", config[7]]
-                cache_management.cache_access("w", cache_path, TLD_A)
+                cache_utils.cache_access("w", cache_path, TLD_A)
                 TLD_NS = ["com", ":", config[3], ", NS"]
-                cache_management.cache_access("w", cache_path, TLD_NS)
+                cache_utils.cache_access("w", cache_path, TLD_NS)
 
     while True:
         user_input = input("recursiveFlag(Enter on/off) >> ")
@@ -60,7 +62,7 @@ def main():
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as rootDNSSocket:
         rootDNSSocket.bind(('', rootDNSPort)) # Bind to all network interface
         
-        cache_management.cache_print(cache_path)
+        cache_utils.cache_print(cache_path)
 
         print("The rootDNSserver is ready to receive")
 
@@ -69,19 +71,19 @@ def main():
             print("receive message from", clientAddress)
             messageFromClient = pickle.loads(message)
             
-            messageFromClient=msg_access.msg_set(messageFromClient, via=" -> root DNS server")
-            domain=msg_access.get_value(messageFromClient, type="domain").split('.')
-            RR_TLD_NS=cache_management.cache_access("s", cache_path, domain[len(domain)-1])
+            messageFromClient=msg_utils.msg_set(messageFromClient, via=" -> root DNS server")
+            domain=msg_utils.get_value(messageFromClient, type="domain").split('.')
+            RR_TLD_NS=cache_utils.cache_access("s", cache_path, domain[len(domain)-1])
 
             # TLD exists
             if RR_TLD_NS:
-                RR_TLD = cache_management.cache_access("s", cache_path, cache_management.cache_get(RR_TLD_NS, "RR_value"))
+                RR_TLD = cache_utils.cache_access("s", cache_path, cache_utils.cache_get(RR_TLD_NS, "RR_value"))
 
                 # END OF DNS-2
                 # rootRecursive query
                 if rootRecursiveFlag==True:
-                    messageFromClient=msg_access.msg_set(messageFromClient, rootRecursiveFlag=True)
-                    destPort=cache_management.cache_get(RR_TLD, type="RR_port")
+                    messageFromClient=msg_utils.msg_set(messageFromClient, rootRecursiveFlag=True)
+                    destPort=cache_utils.cache_get(RR_TLD, type="RR_port")
                     rootDNSSocket.sendto(pickle.dumps(messageFromClient), ("127.0.0.1", destPort))
                     """
                     send to TLD DNS server
@@ -91,8 +93,8 @@ def main():
                 
                 # iterated query
                 else:
-                    destPort=cache_management.cache_get(RR_TLD, type="RR_port")
-                    messageFromClient=msg_access.msg_set(messageFromClient, 
+                    destPort=cache_utils.cache_get(RR_TLD, type="RR_port")
+                    messageFromClient=msg_utils.msg_set(messageFromClient, 
                                                          rootRecursiveFlag=False,
                                                          cachingRR_1=RR_TLD,
                                                          cachingRR_2=RR_TLD_NS,
@@ -102,7 +104,7 @@ def main():
             # END OF DNS-5
             # TLD not exists
             else:
-                replyMessage=msg_access.msg_reply(messageFromClient,
+                replyMessage=msg_utils.msg_reply(messageFromClient,
                                                   IP=False,
                                                   authoritative=False)
                 rootDNSSocket.sendto(pickle.dumps(replyMessage), clientAddress)
