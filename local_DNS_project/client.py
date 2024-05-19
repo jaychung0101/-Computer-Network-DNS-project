@@ -1,7 +1,8 @@
 import socket
 import sys
 import pickle
-import msg_access
+
+from utils import msg_utils
 
 def is_valid_message(data):
     parts = data.split()
@@ -31,8 +32,8 @@ def main():
         temp = input("Type a message in format 'ipaddr <name>' >> ")
         
         if is_valid_message(temp):
-            message=msg_access.msg_set(init=True)
-            message=msg_access.msg_set(message, domain=is_valid_message(temp))
+            message=msg_utils.msg_set(init=True)
+            message=msg_utils.msg_set(message, domain=is_valid_message(temp))
             break
         print("Please follow the given format 'ipaddr <name>'\n")
 
@@ -44,14 +45,14 @@ def main():
         modifiedMessage = pickle.loads(modifiedMessage)
 
     # name resolution success
-    if msg_access.get_value(modifiedMessage, type="authoritative"):
-        print(msg_access.get_value(modifiedMessage, type="domain"), ":", msg_access.get_value(modifiedMessage, type="IP"))
+    if msg_utils.get_value(modifiedMessage, type="authoritative"):
+        print(msg_utils.get_value(modifiedMessage, type="domain"), ":", msg_utils.get_value(modifiedMessage, type="IP"))
 
     # name resolution fail
     else:
-        print(msg_access.get_value(modifiedMessage, type="domain"), ": Can't find IP Address")
+        print(msg_utils.get_value(modifiedMessage, type="domain"), ": Can't find IP Address")
         
-    print("(via:", msg_access.get_value(modifiedMessage, type="via"), ")")
+    print("(via:", msg_utils.get_value(modifiedMessage, type="via"), ")")
 
 if __name__ == "__main__":
     main()

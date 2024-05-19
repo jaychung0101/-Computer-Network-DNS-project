@@ -3,8 +3,8 @@ import sys
 import pickle
 import os
 
-import cache_management
-import msg_access
+from utils import cache_utils
+from utils import msg_utils
 
 def add_via(data, dnsServer):
     message = data[0]
@@ -58,9 +58,9 @@ def main():
             messageFromClient = pickle.loads(message)
             
             path=" -> " + companyDNSserver
-            messageFromClient=msg_access.msg_set(messageFromClient, via=path)
+            messageFromClient=msg_utils.msg_set(messageFromClient, via=path)
 
-            RR_key = msg_access.get_value(messageFromClient, "domain")
+            RR_key = msg_utils.get_value(messageFromClient, "domain")
             RR_A = cache_management.cache_access("s", cache_path, RR_key)
 
             # END OF DNS-2/3/4
@@ -74,7 +74,7 @@ def main():
                     RR_A = cache_management.cache_access("s", cache_path, RR_A_key)
                 
                 RR_A_value = cache_management.cache_get(RR_A, type="RR_value")
-                replyMessage=msg_access.msg_reply(messageFromClient,
+                replyMessage=msg_utils.msg_reply(messageFromClient,
                                                   IP=RR_A_value,
                                                   cachingRR_1=RR_A,
                                                   cachingRR_2=RR_CNAME,
@@ -84,7 +84,7 @@ def main():
             # Domain not exists
             else:
                 # END OF DNS-5
-                replyMessage=msg_access.msg_reply(messageFromClient,
+                replyMessage=msg_utils.msg_reply(messageFromClient,
                                                   IP=False,
                                                   authoritative=False
                                                   )
