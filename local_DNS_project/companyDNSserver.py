@@ -16,14 +16,14 @@ def add_via(data, dnsServer):
 def sys_validate():
     if len(sys.argv) != 3:
         print("Usage: python companyDNSserver.py <port> <companyName.txt>")
-        return
+        sys.exit(1)
     
     config_path = "textFiles/config.txt"
     cache_path = "textFiles/" + sys.argv[2]
     if not os.path.exists(cache_path):
         print(sys.argv[2], "does not exist")
         print("Usage: python companyDNSserver.py <port> <companyName.txt>")
-        return
+        sys.exit(1)
 
     companyName = sys.argv[2].split('.')[0]
     companyDNSserver = companyName + "_dns_server"
@@ -36,7 +36,7 @@ def sys_validate():
     
     if sys.argv[1] != companyDNSPort:
         print("Usage: python companyDNSserver.py", companyDNSPort, sys.argv[2])
-        return
+        sys.exit(1)
 
     companyDNSPort = int(sys.argv[1])
     return cache_path, companyName, companyDNSserver, companyDNSPort
@@ -62,6 +62,7 @@ def main():
 
             RR_key = msg_utils.get_value(messageFromClient, "domain")
             RR_A = cache_utils.cache_access("s", cache_path, RR_key)
+            RR_CNAME = None
 
             # END OF DNS-2/3/4
             # Domain exists
@@ -77,9 +78,11 @@ def main():
                 replyMessage=msg_utils.msg_reply(messageFromClient,
                                                   IP=RR_A_value,
                                                   cachingRR_1=RR_A,
-                                                  cachingRR_2=RR_CNAME,
                                                   authoritative=True
                                                   )
+                
+                if RR_CNAME:
+                    replyMessage=msg_utils.msg_set(replyMessage, cachingRR_2=RR_CNAME)
                 
             # Domain not exists
             else:

@@ -26,7 +26,7 @@ def sys_validate():
 
     if len(sys.argv) != 2 or sys.argv[1] != comTLDDNSPort:
         print("Usage: python comTLDDNSserver.py", comTLDDNSPort) # same as port# in config.txt
-        return
+        sys.exit(1)
     
     # Read all .com authoritative from 'config.txt' and save in cache
     with open(config_path, "r") as f:

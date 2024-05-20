@@ -27,7 +27,7 @@ def sys_validate():
     
     if len(sys.argv) != 2 or sys.argv[1] != rootDNSPort:
         print("Usage: python rootDNSserver.py 23003") # same as port number in config.txt
-        return
+        sys.exit(1)
     
     # Read all TLDDNSserver from 'config.txt' and save in cache
     with open(config_path, "r") as f:

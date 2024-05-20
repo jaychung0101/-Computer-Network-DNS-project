@@ -1,4 +1,8 @@
 [0] key [2] value [4] type [6] port
-machine59.xyz.com , 120.120.120.120 , A , 10002
+machine59.xyz.com , 120.120.120.129 , A 
+server1.xyz.com , 203.249.88.112 , A
+machine69.xyz.com , 234.22.1.89 , A
 ftp.xyz.com , machine59.xyz.com , CNAME
-www.xyz.com , machine59.xyz.com , CNAME
+www.xyz.com , server1.xyz.com , CNAME
+blog.xyz.com , machine69.xyz.com , CNAME
+shop.xyz.com , machine69.xyz.com , CNAME

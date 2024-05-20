@@ -1,1 +1,2 @@
 [0] key [2] value [4] type [6] port
+dns.rootDNSservice.com : 99.99.99.99 , A , 23003

@@ -5,19 +5,19 @@ import pickle
 from utils import cache_utils
 from utils import msg_utils
 
-def caching_and_display(message, path):
+def RR_caching(message, path):
     cachingRR_1=msg_utils.get_value(message, "cachingRR_1")
     cachingRR_2=msg_utils.get_value(message, "cachingRR_2")
-    print("cachingRR_1 >>", cachingRR_1)
-    print("cachingRR_2 >>", cachingRR_2)
     if cachingRR_1:
         cachingRR_1=cachingRR_1.split()
         cachingRR_1=[cachingRR_1[0], ":"] + cachingRR_1[2:]
         cache_utils.cache_access("w", path, cachingRR_1)
+        print("cachingRR_1 >> ", ' '.join(cachingRR_1))
     if cachingRR_2:
         cachingRR_2=cachingRR_2.split()
         cachingRR_2=[cachingRR_2[0], ":"] + cachingRR_2[2:]
         cache_utils.cache_access("w", path, cachingRR_2)
+        print("cachingRR_2 >> ", ' '.join(cachingRR_2))
     print()
 
 
@@ -42,7 +42,7 @@ def sys_validate():
     
     if len(sys.argv) != 2 or sys.argv[1] != localDNSPort:
         print("Usage: python localDNSserver.py", localDNSPort) # same as port# in config.txt
-        return
+        sys.exit(1)
 
     # Read rootDNSserver from 'config.txt' and save in cache
     with open(config_path, "r") as f:
@@ -74,9 +74,9 @@ def main():
 
             # localDNSserver always request recursive query
             messageFromClient = msg_utils.msg_set(messageFromClient, 
-                                                   via = "local DNS server", 
-                                                   recursiveFlag = True
-                                                   )
+                                                  via = "local DNS server", 
+                                                  recursiveFlag = True
+                                                  )
             domain = msg_utils.get_value(messageFromClient, type="domain")
             data = cache_utils.cache_access("s", cache_path, domain)
 
@@ -132,7 +132,7 @@ def main():
                         if msg_utils.get_value(messageFromRoot, type="reply"):
 
                             print("From root(root recursive accepted):")
-                            caching_and_display(messageFromRoot, cache_path)
+                            RR_caching(messageFromRoot, cache_path)
 
                             localDNSSocket.sendto(pickle.dumps(messageFromRoot), clientAddress)
                             continue
@@ -140,7 +140,7 @@ def main():
                         # root recursive denied
                         else:
                             print("From root(root recursive denied):")
-                            caching_and_display(messageFromRoot, cache_path)
+                            RR_caching(messageFromRoot, cache_path)
 
                             destPort = msg_utils.get_value(messageFromRoot, type="nextDest")
 
@@ -161,14 +161,14 @@ def main():
                     # TLD recursive accepted 
                     if msg_utils.get_value(messageFromTLD, type="reply"):
                         print("From TLD(TLD recursive accepted):")
-                        caching_and_display(messageFromTLD, cache_path)
+                        RR_caching(messageFromTLD, cache_path)
 
                         localDNSSocket.sendto(pickle.dumps(messageFromTLD), clientAddress)
 
                     # TLD recursive denied
                     else:
                         print("From TLD(TLD recursive denied):")
-                        caching_and_display(messageFromTLD, cache_path)
+                        RR_caching(messageFromTLD, cache_path)
                         
                         destPort = msg_utils.get_value(messageFromTLD, type="nextDest")
 
@@ -185,7 +185,7 @@ def main():
                 """
                 messageFromAuthoritative = add_via(localDNSSocket.recvfrom(2048))
                 print("From authoritative:")
-                caching_and_display(messageFromAuthoritative, cache_path)
+                RR_caching(messageFromAuthoritative, cache_path)
                 
                 # END OF DNS-4/5
                 if msg_utils.get_value(messageFromAuthoritative, type="reply"):

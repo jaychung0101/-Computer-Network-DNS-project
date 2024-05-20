@@ -1,0 +1,8 @@
+[0] key [2] value [4] type [6] port
+machine32.example.com , 152.2.31.11 , A
+machine33.example.com , 123.55.61.31 , A
+ttt.example.com , 77.77.77.77 , A
+ftp.example.com , machine32.example.com , CNAME
+www.example.com , machine32.example.com , CNAME
+blog.example.com , machine33.example.com , CNAME
+shop.example.com , machine33.example.com , CNAME

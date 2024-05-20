@@ -1,11 +1,11 @@
-import cache_management
+from utils import cache_utils
 
 def main():
     cache_path = "textFiles/localDNSserverCache.txt"
 
     print("Are you sure to reset localDNSserevr cache?")
     print("localDNSserverCache.txt:")
-    cache_management.cache_access("r", cache_path)
+    cache_utils.cache_access("r", cache_path)
     user_input = input("Enter y/n >> ")
 
     if user_input=="y":

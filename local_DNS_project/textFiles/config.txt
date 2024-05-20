@@ -4,3 +4,4 @@ root_dns_server = [ dns.rootDNSservice.com , 99.99.99.99 ] 23003
 comTLD_dns_server = [ dns.comTLDDNSsolution.com , 111.112.113.44 ] 23004
 abcdef_dns_server = [ dns.abcdef.com , 77.88.99.11 ] 10001
 xyz_dns_server = [ dns.xyz.com : 120.120.120.120 ] 10002
+example_dns_server = [ dns.example.com : 152.2.31.1 ] 10003

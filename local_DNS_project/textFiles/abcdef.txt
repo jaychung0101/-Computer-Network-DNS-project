@@ -1,4 +1,7 @@
 [0] key [2] value [4] type [6] port
 machine49.abcdef.com , 77.88.99.49 , A
+machine59.abcdef.com , 46.48.111.222 , A
 ftp.abcdef.com , machine49.abcdef.com , CNAME
 www.abcdef.com , machine49.abcdef.com , CNAME
+blog.abcdef.com , machine59.abcdef.com , CNAME
+shop.abcdef.com , machine59.abcdef.com , CNAME

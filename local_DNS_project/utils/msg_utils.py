@@ -8,7 +8,6 @@ def msg_set(message=None,
         message = {
             'reply' : False,
             'domain': None,
-            'IP': None,
             'via': '',
             'recursiveFlag': False,
             'rootRecursiveFlag': False,
@@ -26,9 +25,6 @@ def msg_set(message=None,
     
     if domain:
         message['domain']=domain
-
-    if IP:
-        message['IP']=IP
 
     if via:
         message['via'] += via
