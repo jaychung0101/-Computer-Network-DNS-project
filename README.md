@@ -57,6 +57,19 @@ ipaddr <domain>
 |ftp.example.com||shop.example.com||
 |ttt.example.com|77.77.77.77 (A타입)
 
+***새로운 IP 또는 company 추가하는 방법***
+1. IP 추가  
+   IP를 추가할 `company.txt`에 `<*.company.com> , <IP> , <RR_type>`을 추가한다. CNAME일 경우 IP 대신 machine의 이름을 적고 machine에 대한 A타입 RR을 추가한다. (띄어쓰기 반드시 준수!!)
+   ```
+   # xyz.txt 예시
+   machine69.xyz.com , 234.22.1.89 , A
+   shop.xyz.com , machine69.xyz.com , CNAME
+   ```
+
+2. company 추가  
+   - `config.txt`에 `<company_name>_dns_server = [ dns.<company_name>.com : <IP> ] <port #>`를 추가한다.
+   - `textFiles/`에 `<company_name>.txt`를 추가하고 IP를 추가한다.
+
 ### 프로젝트 실행 예시
 localDNSserverCache.txt를 열어 caching 확인
 ```shell
