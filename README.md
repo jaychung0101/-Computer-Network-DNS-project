@@ -125,6 +125,7 @@ ipaddr aaa.abcdef.com
 *message*
 ```python
 message = {
+    'reply' : False, # not reply message
     'domain': # domain for name resolution,
     'via': # path of message,
     'recursiveFlag': # recursive query request flag,
