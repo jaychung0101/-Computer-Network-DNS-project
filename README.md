@@ -132,7 +132,7 @@ message = {
     'rootRecursiveFlag': # root accept recursive query,
     'cachingRR_1': # RR_1(A type) caching to local DNS server,
     'cachingRR_2': # RR_2 caching to local DNS server(optional),
-    'nextDest': # next destination of message(use in iterative query),
+    'nextDest': # next destination of message,
     'authoritative': # whether reply is authoritative(default = False)
 }
 ```
